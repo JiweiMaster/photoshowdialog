@@ -17,7 +17,7 @@ class MainActivity : AppCompatActivity() {
         images.add("http://106.14.14.212/media/QAImg/825/1527670188090_kwGsPS7.png")
         images.add("http://106.14.14.212/media/QAImg/825/1527670188090_0Hwwoyk.png")
         images.add("http://106.14.14.212/media/QAImg/825/1527670188090_B5ubaDL.png")
-
+        images.add("http://106.14.14.212/media/QAImg/406/image001.gif")
         val dialog = PhotoShowDialog(this,images,
                 "http://106.14.14.212/media/QAImg/825/1527670188090_B5ubaDL.png")
         dialog.show()
