@@ -52,6 +52,8 @@ public class PhotoShowDialog {
         indictorTextView = view.findViewById(R.id.indictorTextView);
         photoViewPagerAdapter = new PhotoViewPagerAdapter(context,imageUrlStr);
         photoViewPager.setAdapter(photoViewPagerAdapter);
+        //只保存左右两个界面
+        photoViewPager.setOffscreenPageLimit(0);
         photoViewPager.setCurrentItem(firstPosition);
 
         indictorTextView.setText(firstPosition+1+"/"+imageUrlStr.size());
