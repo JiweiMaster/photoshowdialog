@@ -9,6 +9,7 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 /**
  * Created by 18099 on 2018/11/1.
@@ -33,7 +34,9 @@ public class PhotoShowDialog {
         void onDownloadItemClick();
     }
 
-    public PhotoShowDialog(final Context context, final ArrayList<String> imageUrlStr, String firstUrlStr){
+    public PhotoShowDialog(final Context context,
+                           final ArrayList<String> imageUrlStr,
+                           String firstUrlStr){
         this.context = context;
         this.imageUrlStr = imageUrlStr;
         int firstPosition = 0;
@@ -52,8 +55,22 @@ public class PhotoShowDialog {
         indictorTextView = view.findViewById(R.id.indictorTextView);
         photoViewPagerAdapter = new PhotoViewPagerAdapter(context,imageUrlStr);
         photoViewPager.setAdapter(photoViewPagerAdapter);
+
         //只保存左右两个界面
         photoViewPager.setOffscreenPageLimit(0);
+//        通过反射去修改保存的界面值
+//        try {
+//            Field field = photoViewPager.getClass().getDeclaredField("mOffscreenPageLimit");
+//            field.setAccessible(true);
+//            field.setInt(photoViewPager,0);
+//            Log.e("JiweiTag",field.getInt(photoViewPager)+"");
+//
+//        } catch (NoSuchFieldException e) {
+//            e.printStackTrace();
+//        } catch (IllegalAccessException e) {
+//            e.printStackTrace();
+//        }
+
         photoViewPager.setCurrentItem(firstPosition);
 
         indictorTextView.setText(firstPosition+1+"/"+imageUrlStr.size());

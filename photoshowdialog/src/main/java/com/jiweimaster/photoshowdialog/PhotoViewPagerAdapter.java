@@ -74,7 +74,6 @@ public class PhotoViewPagerAdapter extends PagerAdapter {
                     });
         }
 
-
         container.addView(view);
         return view;
     }
@@ -90,12 +89,22 @@ public class PhotoViewPagerAdapter extends PagerAdapter {
     }
 
 
+    /**
+     * 确定当前view的key
+     * @param view
+     * @param object
+     * @return
+     */
     @Override
     public boolean isViewFromObject(@NonNull View view, @NonNull Object object) {
         return view == object;
     }
 
-
+    /**
+     *界面滑动的时候，移除消失的view
+     * @param object
+     * @return
+     */
     @Override
     public int getItemPosition(@NonNull Object object) {
         return POSITION_NONE;
