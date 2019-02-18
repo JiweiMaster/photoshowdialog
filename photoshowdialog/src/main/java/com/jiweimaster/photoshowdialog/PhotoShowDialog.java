@@ -2,6 +2,12 @@ package com.jiweimaster.photoshowdialog;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Handler;
+import android.provider.MediaStore;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,8 +15,14 @@ import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
+
 /**
  * Created by 18099 on 2018/11/1.
  */
@@ -29,9 +41,12 @@ public class PhotoShowDialog {
     TextView indictorTextView;
 
     ArrayList<String> imageUrlStr = new ArrayList<>();
+
+    int currentShowPosition;
+
     public interface IconItemListener{
         void deleteImageView();
-        void onDownloadItemClick();
+        void onDownloadItemClick(int position);
     }
 
     public PhotoShowDialog(final Context context,
@@ -84,6 +99,7 @@ public class PhotoShowDialog {
             @Override
             public void onPageSelected(int position) {
                 indictorTextView.setText(position+1+"/"+imageUrlStr.size());
+                currentShowPosition = position;
             }
 
             @Override
@@ -91,9 +107,10 @@ public class PhotoShowDialog {
 
             }
         });
-
+        //显示删除的按钮
         deleteImageViewLayout.setVisibility(View.INVISIBLE);
-        downLoadImageViewLayout.setVisibility(View.INVISIBLE);
+        //显示下载的按钮
+//        downLoadImageViewLayout.setVisibility(View.INVISIBLE);
 
         deleteImageViewLayout.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,7 +121,7 @@ public class PhotoShowDialog {
         downLoadImageViewLayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                iconItemListener.onDownloadItemClick();
+                iconItemListener.onDownloadItemClick(currentShowPosition);
             }
         });
         closeImageViewLayout.setOnClickListener(new View.OnClickListener() {
@@ -153,5 +170,52 @@ public class PhotoShowDialog {
             return;
         }
         dialog.dismiss();
+    }
+
+    //url转化为Bitmap
+    public static Bitmap returnBitmap(String url){
+        URL myFileUrl;
+        Bitmap bitmap = null;
+        try{
+            myFileUrl = new URL(url);
+            HttpURLConnection conn = (HttpURLConnection) myFileUrl.openConnection();
+            conn.setDoInput(true);
+            conn.connect();
+            InputStream is = conn.getInputStream();
+            bitmap = BitmapFactory.decodeStream(is);
+        }catch(Exception e){
+            Log.e("PhotoShowDialog","url turn bitmap exception=>"+e.toString());
+        }
+        return bitmap;
+    }
+    //bitmap保存到本地的相册中
+    public static void saveBitmapToLocalThumb(Context context, Bitmap bitmap, Handler pictureHandler){
+        File appDir = new File(context.getCacheDir(),"faq");
+        if(!appDir.exists()){
+            appDir.mkdir();
+        }
+        String fileName = "faq_save_picture.jpg";
+        File bitmapFile = new File(appDir,fileName);
+        try{
+            FileOutputStream fos = new FileOutputStream(bitmapFile);
+            bitmap.compress(Bitmap.CompressFormat.JPEG,100,fos);
+            fos.flush();
+            fos.close();
+        }catch(Exception e){
+            Log.e("PhotoShowDialog",""+e.toString());
+        }
+        //文件插入到图库
+        try{
+            MediaStore.Images.Media.insertImage(context.getContentResolver(),
+                    bitmapFile.getAbsolutePath(),fileName,null);
+        }catch(Exception e){
+            Log.e("PhotoShowDialog",e.toString());
+            pictureHandler.obtainMessage(1).sendToTarget();//保存失败
+        }
+        Intent intent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+        Uri uri = Uri.fromFile(bitmapFile);
+        intent.setData(uri);
+        context.sendBroadcast(intent);
+        pictureHandler.obtainMessage(0).sendToTarget();//保存失败
     }
 }
